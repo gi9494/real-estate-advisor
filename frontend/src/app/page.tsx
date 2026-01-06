@@ -13,6 +13,46 @@ export default function Home() {
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    // start assuming no errors
+    let error: string | null = null;
+
+    // Parse numbers (keep null if empty)
+    const minNum = sqmMin.trim() === "" ? null : Number(sqmMin);
+    const maxNum = sqmMax.trim() === "" ? null : Number(sqmMax);
+    const bathNum = bathroomsMin.trim() === "" ? null : Number(bathroomsMin);
+
+    // sqmMin validation
+    if (minNum !== null && (!Number.isFinite(minNum) || minNum < 0)) {
+      error = "sqm min must be a number ≥ 0";
+    }
+
+    // sqmMax validation
+    if (!error && maxNum !== null && (!Number.isFinite(maxNum) || maxNum < 0)) {
+      error = "sqm max must be a number ≥ 0";
+    }
+
+    // min <= max validation (only if both present and valid numbers)
+    if (
+      !error &&
+      minNum !== null &&
+      maxNum !== null &&
+      Number.isFinite(minNum) &&
+      Number.isFinite(maxNum) &&
+      minNum > maxNum
+    ) {
+      error = "sqm max must be greater than or equal to sqm min";
+    }
+
+    // bathroomsMin validation (integer >= 0)
+    if (!error && bathNum !== null && (!Number.isInteger(bathNum) || bathNum < 0)) {
+      error = "bathrooms min must be an integer ≥ 0";
+    }
+
+    if (error) {
+      alert(error);
+      return;
+    }
+
     // Temporary debug: show what we captured
     alert(
       `URL: ${url}\n` +
@@ -21,6 +61,7 @@ export default function Home() {
         `bathroomsMin: ${bathroomsMin}`
     );
   }
+
 
   return (
     <main>
