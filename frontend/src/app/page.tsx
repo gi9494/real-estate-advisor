@@ -85,28 +85,28 @@ export default function Home() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
-        {errors.url && <p style={{ color: "crimson" }}>{errors.url}</p>}
+        {errors.url && <p style={{ color: "crimson",fontSize: "0.8rem", margin: "4px 0"}}>{errors.url}</p>}
 
         <input
           placeholder="sqm min (e.g. 70)"
           value={sqmMin}
           onChange={(e) => setSqmMin(e.target.value)}
         />
-        {errors.sqmMin && <p style={{ color: "crimson" }}>{errors.sqmMin}</p>}
+        {errors.sqmMin && <p style={{ color: "crimson",fontSize: "0.8rem", margin: "4px 0"}}>{errors.sqmMin}</p>}
 
         <input
           placeholder="sqm max (e.g. 90)"
           value={sqmMax}
           onChange={(e) => setSqmMax(e.target.value)}
         />
-        {errors.sqmMax && <p style={{ color: "crimson" }}>{errors.sqmMax}</p>}
+        {errors.sqmMax && <p style={{ color: "crimson" ,fontSize: "0.8rem", margin: "4px 0"}}>{errors.sqmMax}</p>}
 
         <input
           placeholder="bathrooms min (e.g. 2)"
           value={bathroomsMin}
           onChange={(e) => setBathroomsMin(e.target.value)}
         />
-        {errors.bathroomsMin && <p style={{ color: "crimson" }}>{errors.bathroomsMin}</p>}
+        {errors.bathroomsMin && <p style={{ color: "crimson" ,fontSize: "0.8rem", margin: "4px 0"}}>{errors.bathroomsMin}</p>}
 
         <button type="submit">Valuta</button>
       </form>
