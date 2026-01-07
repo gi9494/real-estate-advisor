@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ export default function Home() {
   const [sqmMin, setSqmMin] = useState("");
   const [sqmMax, setSqmMax] = useState("");
   const [bathroomsMin, setBathroomsMin] = useState("");
+  const router = useRouter();
 
   type FieldErrors = {
     url?: string;
@@ -64,13 +66,14 @@ export default function Home() {
     // No errors
     setErrors({});
 
-    // Temporary debug
-    alert(
-      `URL: ${url}\n` +
-        `sqmMin: ${sqmMin}\n` +
-        `sqmMax: ${sqmMax}\n` +
-        `bathroomsMin: ${bathroomsMin}`
-    );
+    const params = new URLSearchParams();
+
+    if (url.trim()) params.set("url", url.trim());
+    if (sqmMin.trim()) params.set("sqmMin", sqmMin.trim());
+    if (sqmMax.trim()) params.set("sqmMax", sqmMax.trim());
+    if (bathroomsMin.trim()) params.set("bathroomsMin", bathroomsMin.trim());
+
+    router.push(`/results?${params.toString()}`);
   }
 
 
