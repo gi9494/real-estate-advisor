@@ -8,7 +8,8 @@ export default function Results({ searchParams }: { searchParams: SearchParams }
   const sqmMax = typeof searchParams.sqmMax === "string" ? searchParams.sqmMax : "";
   const bathroomsMin =
     typeof searchParams.bathroomsMin === "string" ? searchParams.bathroomsMin : "";
-
+  const elevator = searchParams.elevator;
+  const elevatorMustHave = searchParams.elevatorMustHave === "1";
   return (
     <main style={{ maxWidth: 720 }}>
       <h1>Results</h1>
@@ -21,11 +22,9 @@ export default function Results({ searchParams }: { searchParams: SearchParams }
           <li>sqm min: {sqmMin || "—"}</li>
           <li>sqm max: {sqmMax || "—"}</li>
           <li>bathrooms min: {bathroomsMin || "—"}</li>
+          <li>elevator: {typeof elevator === "string" ? elevator : "—"}</li>
+          <li>elevator must have: {elevatorMustHave ? "Yes" : "No"}</li>
         </ul>
-      </div>
-
-      <div style={{ marginTop: 16 }}>
-        <Link href="/">Back</Link>
       </div>
     </main>
   );

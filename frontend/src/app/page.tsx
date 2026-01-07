@@ -10,7 +10,13 @@ export default function Home() {
   const [sqmMin, setSqmMin] = useState("");
   const [sqmMax, setSqmMax] = useState("");
   const [bathroomsMin, setBathroomsMin] = useState("");
+
+  // Nice to have 
+  const [elevator, setElevator] = useState<"indifferent" | "yes" | "no">("indifferent");
+  const [elevatorMustHave, setElevatorMustHave] = useState(false);
+
   const router = useRouter();
+
 
   type FieldErrors = {
     url?: string;
@@ -73,6 +79,9 @@ export default function Home() {
     if (sqmMax.trim()) params.set("sqmMax", sqmMax.trim());
     if (bathroomsMin.trim()) params.set("bathroomsMin", bathroomsMin.trim());
 
+    if (elevator !== "indifferent") params.set("elevator", elevator);
+    if (elevatorMustHave) params.set("elevatorMustHave", "1");
+
     router.push(`/results?${params.toString()}`);
   }
 
@@ -110,6 +119,36 @@ export default function Home() {
           onChange={(e) => setBathroomsMin(e.target.value)}
         />
         {errors.bathroomsMin && <p style={{ color: "crimson" ,fontSize: "0.8rem", margin: "4px 0"}}>{errors.bathroomsMin}</p>}
+
+        <div style={{ marginTop: 12 }}>
+          <label>
+            Elevator
+            <select
+              value={elevator}
+              onChange={(e) => {
+                const v = e.target.value as "indifferent" | "yes" | "no";
+                setElevator(v);
+                if (v === "indifferent") setElevatorMustHave(false);
+              }}
+              style={{ marginLeft: 8 }}
+            >
+              <option value="indifferent">Indifferent</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </label>
+
+          <label style={{ display: "block", marginTop: 6 }}>
+            <input
+              type="checkbox"
+              checked={elevatorMustHave}
+              onChange={(e) => setElevatorMustHave(e.target.checked)}
+              disabled={elevator === "indifferent"}
+            />{" "}
+            Must have
+          </label>
+        </div>
+
 
         <button type="submit">Valuta</button>
       </form>
