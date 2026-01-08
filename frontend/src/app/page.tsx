@@ -8,32 +8,65 @@ type YesNoIndifferent = "indifferent" | "yes" | "no";
 
 type FieldErrors = {
   url?: string;
+  priceMax?: string;
   sqmMin?: string;
   sqmMax?: string;
   bathroomsMin?: string;
+  floorMin?: string;
 };
 
-function ynToBool(v: YesNoIndifferent): boolean | null {
-  if (v === "indifferent") return null;
+function ynToBool(v: YesNoIndifferent): boolean {
+  // Nota: nel tuo JSON "value" è boolean, quindi qui scegliamo:
+  // indifferent => false (ma tu potresti preferire default true o "not specified" in futuro)
+  // Per rispettare ESATTAMENTE la shape JSON, mettiamo sempre un boolean.
   return v === "yes";
 }
 
 export default function Home() {
-  // Basic fields
+  // URL
   const [url, setUrl] = useState("");
+
+  // Price
+  const [priceMax, setPriceMax] = useState("");
+  const [priceMustHave, setPriceMustHave] = useState(true);
+
+  // Surface
   const [sqmMin, setSqmMin] = useState("");
   const [sqmMax, setSqmMax] = useState("");
-  const [bathroomsMin, setBathroomsMin] = useState("");
+  const [surfaceMustHave, setSurfaceMustHave] = useState(true);
 
-  // Preferences currently on UI
+  // Bathrooms
+  const [bathroomsMin, setBathroomsMin] = useState("");
+  const [bathroomsMustHave, setBathroomsMustHave] = useState(true);
+
+  // Yes/No fields + must_have toggles
   const [elevator, setElevator] = useState<YesNoIndifferent>("indifferent");
-  const [elevatorMustHave, setElevatorMustHave] = useState(false);
+  const [elevatorMustHave, setElevatorMustHave] = useState(true);
 
   const [outdoorParking, setOutdoorParking] =
     useState<YesNoIndifferent>("indifferent");
   const [outdoorParkingMustHave, setOutdoorParkingMustHave] = useState(false);
 
-  // UI errors + submit status
+  const [garage, setGarage] = useState<YesNoIndifferent>("indifferent");
+  const [garageMustHave, setGarageMustHave] = useState(false);
+
+  const [balcony, setBalcony] = useState<YesNoIndifferent>("indifferent");
+  const [balconyMustHave, setBalconyMustHave] = useState(false);
+
+  const [isAttic, setIsAttic] = useState<YesNoIndifferent>("indifferent");
+  const [isAtticMustHave, setIsAtticMustHave] = useState(false);
+
+  // Floor
+  const [floorMin, setFloorMin] = useState("");
+  const [floorMustHave, setFloorMustHave] = useState(true);
+
+  // Restructuring
+  const [needsRestructuring, setNeedsRestructuring] =
+    useState<YesNoIndifferent>("indifferent");
+  const [needsRestructuringMustHave, setNeedsRestructuringMustHave] =
+    useState(true);
+
+  // UI state
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitMsg, setSubmitMsg] = useState<string>("");
 
@@ -43,18 +76,25 @@ export default function Home() {
 
     const newErrors: FieldErrors = {};
 
-    // URL validation
-    if (url.trim() === "") {
-      newErrors.url = "URL is required";
-    } else if (!/^https?:\/\/.+/i.test(url.trim())) {
+    // URL
+    if (url.trim() === "") newErrors.url = "URL is required";
+    else if (!/^https?:\/\/.+/i.test(url.trim())) {
       newErrors.url = "URL must start with http:// or https://";
     }
 
-    // Numbers
+    // Numbers parsing
+    const priceNum = priceMax.trim() === "" ? null : Number(priceMax);
     const minNum = sqmMin.trim() === "" ? null : Number(sqmMin);
     const maxNum = sqmMax.trim() === "" ? null : Number(sqmMax);
     const bathNum = bathroomsMin.trim() === "" ? null : Number(bathroomsMin);
+    const floorNum = floorMin.trim() === "" ? null : Number(floorMin);
 
+    // price max
+    if (priceNum !== null && (!Number.isFinite(priceNum) || priceNum < 0)) {
+      newErrors.priceMax = "price max must be a number ≥ 0";
+    }
+
+    // surface min/max
     if (minNum !== null && (!Number.isFinite(minNum) || minNum < 0)) {
       newErrors.sqmMin = "sqm min must be a number ≥ 0";
     }
@@ -70,8 +110,15 @@ export default function Home() {
     ) {
       newErrors.sqmMax = "sqm max must be greater than or equal to sqm min";
     }
+
+    // bathrooms
     if (bathNum !== null && (!Number.isInteger(bathNum) || bathNum < 0)) {
       newErrors.bathroomsMin = "bathrooms min must be an integer ≥ 0";
+    }
+
+    // floor
+    if (floorNum !== null && (!Number.isInteger(floorNum) || floorNum < 0)) {
+      newErrors.floorMin = "floor min must be an integer ≥ 0";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -80,57 +127,61 @@ export default function Home() {
     }
     setErrors({});
 
-    // Convert yes/no/indifferent to boolean or omit
-    const elevatorBool = ynToBool(elevator);
-    const outdoorParkingBool = ynToBool(outdoorParking);
-
-    // Build the long JSON in the exact shape you defined
-    const payload: any = {
+    // Build payload in EXACT shape
+    const payload = {
       url: url.trim(),
 
-      // Not on UI yet: default for now (you can add UI later)
       price: {
-        max: 450000,
-        must_have: true,
+        max: priceNum ?? 450000,
+        must_have: priceMustHave,
       },
 
       surface_sqm: {
         min: minNum ?? 80,
         max: maxNum ?? 100,
-        must_have: true,
+        must_have: surfaceMustHave,
       },
 
       bathrooms: {
         min: bathNum ?? 2,
-        must_have: true,
+        must_have: bathroomsMustHave,
       },
 
-      // Elevator: if indifferent, still send as default false? (better: omit)
-      // We will OMIT if indifferent to avoid lying.
-      // Same for outdoor_parking.
-      // (Backend can treat missing as "not specified")
-    };
-
-    if (elevatorBool !== null) {
-      payload.elevator = {
-        value: elevatorBool,
+      elevator: {
+        value: ynToBool(elevator),
         must_have: elevatorMustHave,
-      };
-    }
+      },
 
-    if (outdoorParkingBool !== null) {
-      payload.outdoor_parking = {
-        value: outdoorParkingBool,
+      outdoor_parking: {
+        value: ynToBool(outdoorParking),
         must_have: outdoorParkingMustHave,
-      };
-    }
+      },
 
-    // Not on UI yet: send defaults for now (you can later connect to UI)
-    payload.garage = { value: true, must_have: false };
-    payload.balcony = { value: true, must_have: false };
-    payload.is_attic = { value: false, must_have: false };
-    payload.floor = { min: 3, must_have: true };
-    payload.needs_restructuring = { value: false, must_have: true };
+      garage: {
+        value: ynToBool(garage),
+        must_have: garageMustHave,
+      },
+
+      balcony: {
+        value: ynToBool(balcony),
+        must_have: balconyMustHave,
+      },
+
+      is_attic: {
+        value: ynToBool(isAttic),
+        must_have: isAtticMustHave,
+      },
+
+      floor: {
+        min: floorNum ?? 3,
+        must_have: floorMustHave,
+      },
+
+      needs_restructuring: {
+        value: ynToBool(needsRestructuring),
+        must_have: needsRestructuringMustHave,
+      },
+    };
 
     try {
       const res = await fetch("http://127.0.0.1:8000/evaluate", {
@@ -146,7 +197,7 @@ export default function Home() {
 
       const data = await res.json().catch(() => null);
       setSubmitMsg(
-        `Sent to backend ✅ (${data?.status ?? "ok"}). Check your backend terminal for the printed JSON.`
+        `Sent to backend ✅ (${data?.status ?? "ok"}). Check the backend terminal for printed JSON.`
       );
     } catch (err: any) {
       setSubmitMsg(`Failed to reach backend: ${err?.message ?? String(err)}`);
@@ -172,7 +223,28 @@ export default function Home() {
             {errors.url && <p className="error">{errors.url}</p>}
           </div>
 
-          {/* sqm min/max */}
+          {/* Price */}
+          <div className="field">
+            <label className="label">Max price</label>
+            <input
+              className="input"
+              placeholder="e.g. 450000"
+              value={priceMax}
+              onChange={(e) => setPriceMax(e.target.value)}
+            />
+            {errors.priceMax && <p className="error">{errors.priceMax}</p>}
+
+            <label className="label" style={{ display: "flex", gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={priceMustHave}
+                onChange={(e) => setPriceMustHave(e.target.checked)}
+              />
+              Must have
+            </label>
+          </div>
+
+          {/* Surface */}
           <div className="row2">
             <div className="field">
               <label className="label">Min surface (sqm)</label>
@@ -197,7 +269,16 @@ export default function Home() {
             </div>
           </div>
 
-          {/* bathrooms */}
+          <label className="label" style={{ display: "flex", gap: 8 }}>
+            <input
+              type="checkbox"
+              checked={surfaceMustHave}
+              onChange={(e) => setSurfaceMustHave(e.target.checked)}
+            />
+            Surface must have
+          </label>
+
+          {/* Bathrooms */}
           <div className="field">
             <label className="label">Bathrooms (min)</label>
             <input
@@ -209,63 +290,91 @@ export default function Home() {
             {errors.bathroomsMin && (
               <p className="error">{errors.bathroomsMin}</p>
             )}
-          </div>
-
-          {/* elevator */}
-          <div className="field">
-            <label className="label">Elevator</label>
-            <select
-              className="select"
-              value={elevator}
-              onChange={(e) => {
-                const v = e.target.value as YesNoIndifferent;
-                setElevator(v);
-                if (v === "indifferent") setElevatorMustHave(false);
-              }}
-            >
-              <option value="indifferent">Indifferent</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
 
             <label className="label" style={{ display: "flex", gap: 8 }}>
               <input
                 type="checkbox"
-                checked={elevatorMustHave}
-                onChange={(e) => setElevatorMustHave(e.target.checked)}
-                disabled={elevator === "indifferent"}
+                checked={bathroomsMustHave}
+                onChange={(e) => setBathroomsMustHave(e.target.checked)}
               />
               Must have
             </label>
           </div>
 
-          {/* outdoor parking */}
+          {/* Elevator */}
+          <PreferenceBlock
+            title="Elevator"
+            value={elevator}
+            setValue={setElevator}
+            mustHave={elevatorMustHave}
+            setMustHave={setElevatorMustHave}
+          />
+
+          {/* Outdoor parking */}
+          <PreferenceBlock
+            title="Outdoor parking"
+            value={outdoorParking}
+            setValue={setOutdoorParking}
+            mustHave={outdoorParkingMustHave}
+            setMustHave={setOutdoorParkingMustHave}
+          />
+
+          {/* Garage */}
+          <PreferenceBlock
+            title="Garage"
+            value={garage}
+            setValue={setGarage}
+            mustHave={garageMustHave}
+            setMustHave={setGarageMustHave}
+          />
+
+          {/* Balcony */}
+          <PreferenceBlock
+            title="Balcony"
+            value={balcony}
+            setValue={setBalcony}
+            mustHave={balconyMustHave}
+            setMustHave={setBalconyMustHave}
+          />
+
+          {/* Attic */}
+          <PreferenceBlock
+            title="Attic"
+            value={isAttic}
+            setValue={setIsAttic}
+            mustHave={isAtticMustHave}
+            setMustHave={setIsAtticMustHave}
+          />
+
+          {/* Floor */}
           <div className="field">
-            <label className="label">Outdoor parking</label>
-            <select
-              className="select"
-              value={outdoorParking}
-              onChange={(e) => {
-                const v = e.target.value as YesNoIndifferent;
-                setOutdoorParking(v);
-                if (v === "indifferent") setOutdoorParkingMustHave(false);
-              }}
-            >
-              <option value="indifferent">Indifferent</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
+            <label className="label">Floor (min)</label>
+            <input
+              className="input"
+              placeholder="e.g. 3"
+              value={floorMin}
+              onChange={(e) => setFloorMin(e.target.value)}
+            />
+            {errors.floorMin && <p className="error">{errors.floorMin}</p>}
 
             <label className="label" style={{ display: "flex", gap: 8 }}>
               <input
                 type="checkbox"
-                checked={outdoorParkingMustHave}
-                onChange={(e) => setOutdoorParkingMustHave(e.target.checked)}
-                disabled={outdoorParking === "indifferent"}
+                checked={floorMustHave}
+                onChange={(e) => setFloorMustHave(e.target.checked)}
               />
               Must have
             </label>
           </div>
+
+          {/* Needs restructuring */}
+          <PreferenceBlock
+            title="Needs restructuring"
+            value={needsRestructuring}
+            setValue={setNeedsRestructuring}
+            mustHave={needsRestructuringMustHave}
+            setMustHave={setNeedsRestructuringMustHave}
+          />
 
           <button className="btn" type="submit">
             Evaluate
@@ -279,5 +388,40 @@ export default function Home() {
         </form>
       </div>
     </main>
+  );
+}
+
+// Small helper component (so the file stays readable)
+function PreferenceBlock(props: {
+  title: string;
+  value: YesNoIndifferent;
+  setValue: (v: YesNoIndifferent) => void;
+  mustHave: boolean;
+  setMustHave: (b: boolean) => void;
+}) {
+  const { title, value, setValue, mustHave, setMustHave } = props;
+
+  return (
+    <div className="field">
+      <label className="label">{title}</label>
+      <select
+        className="select"
+        value={value}
+        onChange={(e) => setValue(e.target.value as YesNoIndifferent)}
+      >
+        <option value="indifferent">Indifferent</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+
+      <label className="label" style={{ display: "flex", gap: 8 }}>
+        <input
+          type="checkbox"
+          checked={mustHave}
+          onChange={(e) => setMustHave(e.target.checked)}
+        />
+        Must have
+      </label>
+    </div>
   );
 }
