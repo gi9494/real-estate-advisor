@@ -87,71 +87,76 @@ export default function Home() {
 
 
   return (
-    <main>
-      <h1>Real Estate Advisor</h1>
-      <p>Input page (here will be the form).</p>
+    <main className="container">
+      <div className="card">
+        <h1 className="h1">Real Estate Advisor</h1>
+        <p className="sub">Paste a listing URL and set your requirements.</p>
 
-      <form onSubmit={onSubmit}>
-        <input
-          placeholder="https://..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-        />
-        {errors.url && <p style={{ color: "crimson",fontSize: "0.8rem", margin: "4px 0"}}>{errors.url}</p>}
+        <form className="form" onSubmit={onSubmit}>
+          {/* per ora lasciamo i tuoi input esattamente come sono */}
+          <input
+            placeholder="https://..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
+          {errors.url && <p className="error">{errors.url}</p>}
 
-        <input
-          placeholder="sqm min (e.g. 70)"
-          value={sqmMin}
-          onChange={(e) => setSqmMin(e.target.value)}
-        />
-        {errors.sqmMin && <p style={{ color: "crimson",fontSize: "0.8rem", margin: "4px 0"}}>{errors.sqmMin}</p>}
+          <input
+            placeholder="sqm min (e.g. 70)"
+            value={sqmMin}
+            onChange={(e) => setSqmMin(e.target.value)}
+          />
+          {errors.sqmMin && <p className="error">{errors.sqmMin}</p>}
 
-        <input
-          placeholder="sqm max (e.g. 90)"
-          value={sqmMax}
-          onChange={(e) => setSqmMax(e.target.value)}
-        />
-        {errors.sqmMax && <p style={{ color: "crimson" ,fontSize: "0.8rem", margin: "4px 0"}}>{errors.sqmMax}</p>}
+          <input
+            placeholder="sqm max (e.g. 90)"
+            value={sqmMax}
+            onChange={(e) => setSqmMax(e.target.value)}
+          />
+          {errors.sqmMax && <p className="error">{errors.sqmMax}</p>}
 
-        <input
-          placeholder="bathrooms min (e.g. 2)"
-          value={bathroomsMin}
-          onChange={(e) => setBathroomsMin(e.target.value)}
-        />
-        {errors.bathroomsMin && <p style={{ color: "crimson" ,fontSize: "0.8rem", margin: "4px 0"}}>{errors.bathroomsMin}</p>}
+          <input
+            placeholder="bathrooms min (e.g. 2)"
+            value={bathroomsMin}
+            onChange={(e) => setBathroomsMin(e.target.value)}
+          />
+          {errors.bathroomsMin && <p className="error">{errors.bathroomsMin}</p>}
 
-        <div style={{ marginTop: 12 }}>
-          <label>
-            Elevator
-            <select
-              value={elevator}
-              onChange={(e) => {
-                const v = e.target.value as "indifferent" | "yes" | "no";
-                setElevator(v);
-                if (v === "indifferent") setElevatorMustHave(false);
-              }}
-              style={{ marginLeft: 8 }}
-            >
-              <option value="indifferent">Indifferent</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </label>
+          <div style={{ marginTop: 12 }}>
+            <label>
+              Elevator
+              <select
+                value={elevator}
+                onChange={(e) => {
+                  const v = e.target.value as "indifferent" | "yes" | "no";
+                  setElevator(v);
+                  if (v === "indifferent") setElevatorMustHave(false);
+                }}
+                style={{ marginLeft: 8 }}
+              >
+                <option value="indifferent">Indifferent</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </label>
 
-          <label style={{ display: "block", marginTop: 6 }}>
-            <input
-              type="checkbox"
-              checked={elevatorMustHave}
-              onChange={(e) => setElevatorMustHave(e.target.checked)}
-              disabled={elevator === "indifferent"}
-            />{" "}
-            Must have
-          </label>
-        </div>
+            <label style={{ display: "block", marginTop: 6 }}>
+              <input
+                type="checkbox"
+                checked={elevatorMustHave}
+                onChange={(e) => setElevatorMustHave(e.target.checked)}
+                disabled={elevator === "indifferent"}
+              />{" "}
+              Must have
+            </label>
+          </div>
 
-
-        <button type="submit">Valuta</button>
-      </form>
+          <button className="btn" type="submit">
+            Evaluate
+          </button>
+        </form>
+      </div>
     </main>
   );
+
 }
