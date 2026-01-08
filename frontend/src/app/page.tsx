@@ -4,6 +4,13 @@ import { useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
+type FieldErrors = {
+  url?: string;
+  sqmMin?: string;
+  sqmMax?: string;
+  bathroomsMin?: string;
+};
+
 export default function Home() {
   // State: React memory for each field (strings for now)
   const [url, setUrl] = useState("");
@@ -11,19 +18,13 @@ export default function Home() {
   const [sqmMax, setSqmMax] = useState("");
   const [bathroomsMin, setBathroomsMin] = useState("");
 
-  // Nice to have 
-  const [elevator, setElevator] = useState<"indifferent" | "yes" | "no">("indifferent");
+  // Preferences
+  const [elevator, setElevator] = useState<"indifferent" | "yes" | "no">(
+    "indifferent"
+  );
   const [elevatorMustHave, setElevatorMustHave] = useState(false);
 
   const router = useRouter();
-
-
-  type FieldErrors = {
-    url?: string;
-    sqmMin?: string;
-    sqmMax?: string;
-    bathroomsMin?: string;
-  };
   const [errors, setErrors] = useState<FieldErrors>({});
 
   function onSubmit(e: React.FormEvent) {
@@ -85,7 +86,6 @@ export default function Home() {
     router.push(`/results?${params.toString()}`);
   }
 
-
   return (
     <main className="container">
       <div className="card">
@@ -93,59 +93,81 @@ export default function Home() {
         <p className="sub">Paste a listing URL and set your requirements.</p>
 
         <form className="form" onSubmit={onSubmit}>
-          <input
-            placeholder="https://..."
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-          {errors.url && <p className="error">{errors.url}</p>}
+          {/* URL */}
+          <div className="field">
+            <label className="label">Listing URL</label>
+            <input
+              className="input"
+              placeholder="https://..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+            {errors.url && <p className="error">{errors.url}</p>}
+          </div>
 
-          <input
-            placeholder="sqm min (e.g. 70)"
-            value={sqmMin}
-            onChange={(e) => setSqmMin(e.target.value)}
-          />
-          {errors.sqmMin && <p className="error">{errors.sqmMin}</p>}
+          {/* sqm min/max */}
+          <div className="row2">
+            <div className="field">
+              <label className="label">Min surface (sqm)</label>
+              <input
+                className="input"
+                placeholder="e.g. 70"
+                value={sqmMin}
+                onChange={(e) => setSqmMin(e.target.value)}
+              />
+              {errors.sqmMin && <p className="error">{errors.sqmMin}</p>}
+            </div>
 
-          <input
-            placeholder="sqm max (e.g. 90)"
-            value={sqmMax}
-            onChange={(e) => setSqmMax(e.target.value)}
-          />
-          {errors.sqmMax && <p className="error">{errors.sqmMax}</p>}
+            <div className="field">
+              <label className="label">Max surface (sqm)</label>
+              <input
+                className="input"
+                placeholder="e.g. 90"
+                value={sqmMax}
+                onChange={(e) => setSqmMax(e.target.value)}
+              />
+              {errors.sqmMax && <p className="error">{errors.sqmMax}</p>}
+            </div>
+          </div>
 
-          <input
-            placeholder="bathrooms min (e.g. 2)"
-            value={bathroomsMin}
-            onChange={(e) => setBathroomsMin(e.target.value)}
-          />
-          {errors.bathroomsMin && <p className="error">{errors.bathroomsMin}</p>}
+          {/* bathrooms */}
+          <div className="field">
+            <label className="label">Bathrooms min</label>
+            <input
+              className="input"
+              placeholder="e.g. 2"
+              value={bathroomsMin}
+              onChange={(e) => setBathroomsMin(e.target.value)}
+            />
+            {errors.bathroomsMin && (
+              <p className="error">{errors.bathroomsMin}</p>
+            )}
+          </div>
 
-          <div style={{ marginTop: 12 }}>
-            <label>
-              Elevator
-              <select
-                value={elevator}
-                onChange={(e) => {
-                  const v = e.target.value as "indifferent" | "yes" | "no";
-                  setElevator(v);
-                  if (v === "indifferent") setElevatorMustHave(false);
-                }}
-                style={{ marginLeft: 8 }}
-              >
-                <option value="indifferent">Indifferent</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-            </label>
+          {/* elevator */}
+          <div className="field">
+            <label className="label">Elevator</label>
+            <select
+              className="select"
+              value={elevator}
+              onChange={(e) => {
+                const v = e.target.value as "indifferent" | "yes" | "no";
+                setElevator(v);
+                if (v === "indifferent") setElevatorMustHave(false);
+              }}
+            >
+              <option value="indifferent">Indifferent</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
 
-            <label style={{ display: "block", marginTop: 6 }}>
+            <label className="label" style={{ display: "flex", gap: 8 }}>
               <input
                 type="checkbox"
                 checked={elevatorMustHave}
                 onChange={(e) => setElevatorMustHave(e.target.checked)}
                 disabled={elevator === "indifferent"}
-              />{" "}
+              />
               Must have
             </label>
           </div>
@@ -157,5 +179,4 @@ export default function Home() {
       </div>
     </main>
   );
-
 }
