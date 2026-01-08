@@ -93,7 +93,6 @@ export default function Home() {
         <p className="sub">Paste a listing URL and set your requirements.</p>
 
         <form className="form" onSubmit={onSubmit}>
-          {/* per ora lasciamo i tuoi input esattamente come sono */}
           <input
             placeholder="https://..."
             value={url}
